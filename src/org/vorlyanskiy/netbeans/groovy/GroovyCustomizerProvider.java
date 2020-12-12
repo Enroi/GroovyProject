@@ -41,9 +41,7 @@ public class GroovyCustomizerProvider implements CustomizerProvider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            VariousProjectUtils variousProjectUtils = new VariousProjectUtils();
-            String pathToGroovy = variousProjectUtils.getPathToGroovy();
-            System.out.println(pathToGroovy);
+
         }
 
     }

@@ -1,16 +1,15 @@
 package org.vorlyanskiy.netbeans.groovy;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.netbeans.api.io.IOProvider;
-import org.netbeans.api.io.InputOutput;
+import java.util.Scanner;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.vorlyanskiy.netbeans.groovy.utils.VariousProjectUtils;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -19,30 +18,45 @@ public class RunScript implements Runnable {
 
     private final FileObject fileObject;
     private final String pathToGroovy;
+    private final InputOutput io;
 
-    public RunScript(FileObject fileObject, String pathToGroovy) {
+    public RunScript(FileObject fileObject, String pathToGroovy, InputOutput io) {
         this.fileObject = fileObject;
         this.pathToGroovy = pathToGroovy;
+        this.io = io;
     }
 
     @Override
     public void run() {
-        InputOutput io = IOProvider.getDefault().getIO(fileObject.getName(), true);
         try {
-            io.show();
             String pathToFile = fileObject.getPath();
             ProcessBuilder builder = new ProcessBuilder(pathToGroovy, pathToFile);
             Process process = builder.start();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            List<String> outputs = bufferedReader.lines().collect(Collectors.toList());
-            outputs.forEach(io.getOut()::println);
+            ProgressHandle ph = ProgressHandle.createHandle(fileObject.getName(), () -> {
+                process.destroyForcibly();
+                return true;
+            });
+            ph.start();
+            inheritIO(process.getInputStream(), io.getOut(), ph);
+            inheritIO(process.getErrorStream(), io.getOut(), null);
         } catch (IOException ex) {
             Arrays.asList(ex.getStackTrace()).stream().forEach(ste -> {
                 io.getOut().println(ste);
             });
             Exceptions.printStackTrace(ex);
         }
-        io.getOut().close();
     }
-
+    
+    private void inheritIO(final InputStream src, final OutputWriter dest, ProgressHandle ph) {
+        new Thread(() -> {
+            Scanner sc = new Scanner(src);
+            while (sc.hasNextLine()) {
+                dest.println(sc.nextLine());
+            }
+            dest.close();
+            if (ph != null) {
+                ph.finish();
+            }
+        }).start();
+    }
 }
