@@ -44,8 +44,11 @@ public final class RunGroovySProject implements ActionListener {
         FileObject primaryFile = context.getPrimaryFile();
         String pathToGroovy = getPathToGroovy(primaryFile);
         if (pathToGroovy == null || pathToGroovy.isBlank()) {
-            JOptionPane.showMessageDialog(null, "Set path to Groovy executable in menu \"Tools\"-\"Options\" or in Properties of project. ");
-            return;
+            pathToGroovy = VariousProjectUtils.getGlobalGroovyPath();
+            if (pathToGroovy == null || pathToGroovy.isBlank()) {
+                JOptionPane.showMessageDialog(null, "Set path to Groovy executable in menu \"Tools\"-\"Options\" or in Properties of project. ");
+                return;
+            }
         }
         org.openide.windows.InputOutput io = IOProvider.getDefault().getIO(primaryFile.getName(), true);
         io.setFocusTaken(true);
@@ -53,7 +56,7 @@ public final class RunGroovySProject implements ActionListener {
         RequestProcessor rp = new RequestProcessor("GroovyScriptRunner");
         rp.post(task);
     }
-
+    
     private String getPathToGroovy(FileObject primaryFile) {
         Project project = FileOwnerQuery.getOwner(primaryFile);
         String pathToGroovy = VariousProjectUtils.getPath(project);
