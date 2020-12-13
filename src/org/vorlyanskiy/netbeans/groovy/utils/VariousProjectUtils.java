@@ -14,10 +14,12 @@ public class VariousProjectUtils {
 
     public static String getPath(Project project) {
         String path = null;
-        Preferences preferences = ProjectUtils.getPreferences(project, OptionsDataModel.class, true);
-        String groovyPath = preferences.get(GROOVY_PATH, "");
-        if (!groovyPath.isEmpty()) {
-            path = groovyPath;
+        if (project != null) {
+            Preferences preferences = ProjectUtils.getPreferences(project, OptionsDataModel.class, true);
+            String groovyPath = preferences.get(GROOVY_PATH, "");
+            if (!groovyPath.isEmpty()) {
+                path = groovyPath;
+            }
         }
         return path;
     }

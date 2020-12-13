@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Scanner;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
