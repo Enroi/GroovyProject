@@ -30,7 +30,6 @@ public class GroovyProjectLogicalView implements LogicalViewProvider {
             FileObject projectDirectory = project.getProjectDirectory();
             DataFolder projectFolder = DataFolder.findFolder(projectDirectory);
             Node nodeOfProjectFolder = projectFolder.getNodeDelegate();
-            //Decorate the project directory's node:
             return new ProjectNode(nodeOfProjectFolder, project);
         } catch (DataObjectNotFoundException donfe) {
             donfe.printStackTrace();

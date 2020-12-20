@@ -15,9 +15,9 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  */
-final class ProjectNode extends FilterNode {
+public final class ProjectNode extends FilterNode {
 
-    final GroovyProject project;
+    private final GroovyProject project;
 
     public ProjectNode(Node node, GroovyProject project) throws DataObjectNotFoundException {
         super(node, NodeFactorySupport.createCompositeChildren(project, "Projects/org-groovy-project/Nodes"), new ProxyLookup(new Lookup[]{Lookups.singleton(project), node.getLookup()}));
@@ -26,7 +26,11 @@ final class ProjectNode extends FilterNode {
 
     @Override
     public Action[] getActions(boolean arg0) {
-        return new Action[]{CommonProjectActions.newFileAction(), CommonProjectActions.customizeProjectAction(), CommonProjectActions.closeProjectAction()};
+        return new Action[]{
+            CommonProjectActions.newFileAction(),
+            CommonProjectActions.customizeProjectAction(),
+            CommonProjectActions.closeProjectAction()
+        };
     }
 
     @Override
