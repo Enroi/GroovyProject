@@ -2,6 +2,7 @@ package org.vorlyanskiy.netbeans.groovy.nodes;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.event.ChangeListener;
@@ -61,7 +62,9 @@ public class GroovyScriptNodeFactory implements NodeFactory {
                 Exceptions.printStackTrace(ex);
             }
             if (!nodeDelegate.isLeaf()) {
-                nodeDelegate = new FilterNode(nodeDelegate, new GroovyChildren(fo));
+                GroovyChildren groovyChildren = new GroovyChildren(fo);
+                groovyChildren.setComparator(new ChildrenComprator());
+                nodeDelegate = new FilterNode(nodeDelegate, groovyChildren);
             }
             return nodeDelegate;
         }
@@ -83,7 +86,23 @@ public class GroovyScriptNodeFactory implements NodeFactory {
         }
 
     }
+    
+    private class ChildrenComprator implements Comparator<Node> {
 
+        @Override
+        public int compare(Node o1, Node o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            } if (o1 != null && o2 == null) {
+                return 1;
+            } if (o1 == null && o2 != null) {
+                return -1;
+            }
+            return o1.getName().compareTo(o2.getName());
+        }
+        
+    }
+    
     private class GroovyChildren extends Children.SortedArray {
 
         private final FileObject fo;
