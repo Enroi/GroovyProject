@@ -40,11 +40,11 @@ public class ProjectNodesList implements NodeList<FileObject> {
         Node nodeDelegate = null;
         try {
             nodeDelegate = DataObject.find(fo).getNodeDelegate();
+            GroovyChildren groovyChildren = null;
             if (!nodeDelegate.isLeaf()) {
-                GroovyChildren groovyChildren = new GroovyChildren(fo);
-                groovyChildren.setComparator(new ChildrenComprator());
-                nodeDelegate = new FilterNode(nodeDelegate, groovyChildren);
+                groovyChildren = new GroovyChildren(fo);
             }
+            nodeDelegate = new GroovyScriptNode(nodeDelegate, groovyChildren);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -18,10 +20,8 @@ public class GroovyChildren extends Children.SortedArray {
 
     public GroovyChildren(FileObject fo) {
         this.fo = fo;
-    }
-    
-    private void testMethod() {
-        refresh();
+        LocalFileChangeAdapter localFileChangeAdapter = new LocalFileChangeAdapter();
+        fo.addFileChangeListener(localFileChangeAdapter);
     }
 
     @Override
@@ -29,8 +29,7 @@ public class GroovyChildren extends Children.SortedArray {
         List<Node> result = Arrays.asList(fo.getChildren())
                 .stream()
                 .filter(fo -> {
-                    return fo.isFolder()
-                            || (fo.getExt() != null && fo.getExt().equalsIgnoreCase("groovy"));
+                    return isGroovyScriptOrFolder(fo);
                 })
                 .sorted((fo1, fo2) -> {
                     return fo1.getName().compareToIgnoreCase(fo2.getName());
@@ -38,15 +37,55 @@ public class GroovyChildren extends Children.SortedArray {
             Node nodeDelegate = null;
             try {
                 nodeDelegate = DataObject.find(fob).getNodeDelegate();
+                GroovyChildren groovyChildren = null;
+                if (!nodeDelegate.isLeaf()) {
+                    groovyChildren = new GroovyChildren(fob);
+                }
+                nodeDelegate = new GroovyScriptNode(nodeDelegate, groovyChildren);
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
-            }
-            if (!nodeDelegate.isLeaf()) {
-                nodeDelegate = new FilterNode(nodeDelegate, new GroovyChildren(fob));
             }
             return nodeDelegate;
         }).collect(Collectors.toList());
         return result;
     }
 
+    private boolean isGroovyScriptOrFolder(FileObject fo1) {
+        return fo1.isFolder() || (fo1.getExt() != null && fo1.getExt().equalsIgnoreCase("groovy"));
+    }
+
+    class LocalFileChangeAdapter extends FileChangeAdapter {
+
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            try {
+                FileObject created = fe.getFile();
+                LocalFileChangeAdapter localFileChangeAdapter = new LocalFileChangeAdapter();
+                created.addFileChangeListener(localFileChangeAdapter);
+                Node createdNode = DataObject.find(created).getNodeDelegate();
+                createdNode = new GroovyScriptNode(createdNode, null);
+                nodes.add(createdNode);
+                refresh();
+            } catch (DataObjectNotFoundException ex) {
+                
+            }
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            FileObject created = fe.getFile();
+            if (isGroovyScriptOrFolder(created)) {
+                try {
+                    Node createdNode = DataObject.find(created).getNodeDelegate();
+                    createdNode = new GroovyScriptNode(createdNode, null);
+                    nodes.add(createdNode);
+                    refresh();
+                } catch (DataObjectNotFoundException ex) {
+                    
+                }
+            }
+        }
+
+    }
 }
