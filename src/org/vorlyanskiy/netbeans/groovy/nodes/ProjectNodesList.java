@@ -8,8 +8,8 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.vorlyanskiy.netbeans.groovy.GroovyProject;
 
@@ -19,6 +19,7 @@ import org.vorlyanskiy.netbeans.groovy.GroovyProject;
 public class ProjectNodesList implements NodeList<FileObject> {
 
     private final GroovyProject project;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public ProjectNodesList(GroovyProject project) {
         this.project = project;

@@ -10,7 +10,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -59,23 +58,28 @@ public class GroovyChildren extends Children.SortedArray {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            try {
-                FileObject created = fe.getFile();
-                LocalFileChangeAdapter localFileChangeAdapter = new LocalFileChangeAdapter();
-                created.addFileChangeListener(localFileChangeAdapter);
-                Node createdNode = DataObject.find(created).getNodeDelegate();
-                createdNode = new GroovyScriptNode(createdNode, null);
-                nodes.add(createdNode);
-                refresh();
-            } catch (DataObjectNotFoundException ex) {
-                
+            FileObject created = fe.getFile();
+            if (nodes != null
+                    && created.getParent() == GroovyChildren.this.fo) {
+                try {
+                    LocalFileChangeAdapter localFileChangeAdapter = new LocalFileChangeAdapter();
+                    created.addFileChangeListener(localFileChangeAdapter);
+                    Node createdNode = DataObject.find(created).getNodeDelegate();
+                    createdNode = new GroovyScriptNode(createdNode, new GroovyChildren(created));
+                    nodes.add(createdNode);
+                    refresh();
+                } catch (DataObjectNotFoundException ex) {
+
+                }
             }
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
             FileObject created = fe.getFile();
-            if (isGroovyScriptOrFolder(created)) {
+            if (isGroovyScriptOrFolder(created) 
+                    && nodes != null
+                    && created.getParent() == GroovyChildren.this.fo) {
                 try {
                     Node createdNode = DataObject.find(created).getNodeDelegate();
                     createdNode = new GroovyScriptNode(createdNode, null);
