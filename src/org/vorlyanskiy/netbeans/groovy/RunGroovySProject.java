@@ -43,9 +43,9 @@ public final class RunGroovySProject implements ActionListener {
     public void actionPerformed(ActionEvent ev) {
         FileObject primaryFile = context.getPrimaryFile();
         String pathToGroovy = getPathToGroovy(primaryFile);
-        if (pathToGroovy == null || pathToGroovy.isBlank()) {
+        if (pathToGroovy == null || pathToGroovy.trim().length() == 0) {
             pathToGroovy = VariousProjectUtils.getGlobalGroovyPath();
-            if (pathToGroovy == null || pathToGroovy.isBlank()) {
+            if (pathToGroovy == null || pathToGroovy.trim().length() == 0) {
                 JOptionPane.showMessageDialog(null, "Set path to Groovy executable in menu \"Tools\"-\"Options\" or in Properties of project. ");
                 return;
             }
@@ -60,7 +60,7 @@ public final class RunGroovySProject implements ActionListener {
     private String getPathToGroovy(FileObject primaryFile) {
         Project project = FileOwnerQuery.getOwner(primaryFile);
         String pathToGroovy = VariousProjectUtils.getPath(project);
-        if ((pathToGroovy == null || pathToGroovy.isBlank())
+        if ((pathToGroovy == null || pathToGroovy.trim().length() == 0)
                 && primaryFile.getParent() != null) {
             return getPathToGroovy(primaryFile.getParent());
         }
